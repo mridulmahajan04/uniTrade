@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AlignJustify, Search, ShoppingCart, User } from "lucide-react";
+import { AlignJustify, ShoppingCart, User } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ClerkLoaded } from "@clerk/nextjs";
+import { SearchModal } from "./SearchModal";
 
 const Navbar = () => {
   const { user } = useUser();
@@ -21,7 +22,7 @@ const Navbar = () => {
     try {
       const pass = await user?.createPasskey();
       console.log(pass);
-      
+
     } catch (error) {
       console.log(error);
     }
@@ -52,9 +53,10 @@ const Navbar = () => {
 
         {/* Right side icons */}
         <div className="hidden md:flex items-center space-x-4">
-          <Button variant="ghost" size="icon" aria-label="Search">
-            <Search className="h-5 w-5" />
-          </Button>
+          <form action="/search">
+            <SearchModal />
+            {/* <input type="search" name="query" id="" /> */}
+          </form>
 
           <ClerkLoaded>
             {user ? (
@@ -74,7 +76,7 @@ const Navbar = () => {
             )}
 
             {user?.passkeys.length === 0 && (
-              <button onClick = {createPasskey} className="bg-white hover:bg-black-700 hover:text-black animate-pulse text-black-500 font-bold py-2 px-4 rounded border-black-300 border">Create a Passkey</button>
+              <button onClick={createPasskey} className="bg-white hover:bg-black-700 hover:text-black animate-pulse text-black-500 font-bold py-2 px-4 rounded border-black-300 border">Create a Passkey</button>
             )}
           </ClerkLoaded>
         </div>
@@ -120,12 +122,14 @@ const Navbar = () => {
                 </Link>
 
                 <div className="flex items-center space-x-4 pt-4">
-                  <Button variant="ghost" size="icon" aria-label="Search">
-                    <Search className="h-5 w-5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" aria-label="Account">
-                    <User className="h-5 w-5" />
-                  </Button>
+                  <SearchModal />
+                  {!user && (
+                    <SignInButton mode="modal">
+                      <Button variant="ghost" size="icon" aria-label="Account">
+                        <User className="h-5 w-5" />
+                      </Button>
+                    </SignInButton>
+                  )}
                   <Button variant="ghost" size="icon" aria-label="Cart">
                     <ShoppingCart className="h-5 w-5" />
                   </Button>
