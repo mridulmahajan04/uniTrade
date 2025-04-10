@@ -1062,7 +1062,7 @@
           "type": "string"
         }
       },
-      "title": {
+      "name": {
         "type": "objectAttribute",
         "value": {
           "type": "string"

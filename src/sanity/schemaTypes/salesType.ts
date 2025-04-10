@@ -59,7 +59,7 @@ export const salesType = defineType({
             const status = isActive ? "Active" : "Inactive"; //You can use select. also 
             return {
                 title:select.title,
-                subtitle: `${discountAmount}% off - Code : ${coupanCode} - $status`,
+                subtitle: `${discountAmount}% off - Code : ${coupanCode} - ${status}`,
             };
         }
     }

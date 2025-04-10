@@ -1,6 +1,8 @@
 import { getAllProducts } from '@/sanity/lib/products/getAllProducts'
 import { getAllCategories } from '@/sanity/lib/products/getAllCategories';
+import ProductsView from '@/components/ProductsView';
 import React from 'react'
+import ChristmasBanner from '@/components/ChristmasBanner';
 
 const page = async () => {
     const products = await getAllProducts();
@@ -8,7 +10,10 @@ const page = async () => {
     console.log(products);
     return (
         <div>
-            hello
+            <ChristmasBanner />
+            <div className="flex flex-col items-center justify-top min-h-screen bg-gray-100 p-4" >
+                <ProductsView products={products} categoreis={categories} />
+            </div>
         </div>
     )
 }

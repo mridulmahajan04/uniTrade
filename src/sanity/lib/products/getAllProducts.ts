@@ -16,5 +16,6 @@ export const getAllProducts = async () => {
         return product.data || [];
     } catch (error) {
         console.error(error);
+        return [];
     }
 }

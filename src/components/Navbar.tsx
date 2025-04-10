@@ -40,7 +40,7 @@ const Navbar = () => {
           <Link href="/" className="text-neutral-700 hover:text-neutral-900">
             Home
           </Link>
-          <Link href="/products" className="text-neutral-700 hover:text-neutral-900">
+          <Link href="/product" className="text-neutral-700 hover:text-neutral-900">
             Products
           </Link>
           <Link href="/categories" className="text-neutral-700 hover:text-neutral-900">
