@@ -13,10 +13,14 @@ import {
 } from "@/components/ui/sheet";
 import { ClerkLoaded } from "@clerk/nextjs";
 import { SearchModal } from "./SearchModal";
+import { useBasketStore } from "@/store/store";
 
 const Navbar = () => {
   const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
+  const itemCount = useBasketStore((state) =>
+    state.items.reduce((total, item) => total + item.quantity, 0)
+  );
   const createPasskey = async () => {
 
     try {
@@ -63,7 +67,11 @@ const Navbar = () => {
               <>
                 <UserButton />
                 <Button variant="ghost" size="icon" aria-label="Cart">
-                  <ShoppingCart className="h-5 w-5" />
+                  <Link href="/basket">
+                  <ShoppingCart className="h-5 w-5 " >
+
+                  </ShoppingCart>
+                  </Link>
                 </Button>
               </>
             ) : (

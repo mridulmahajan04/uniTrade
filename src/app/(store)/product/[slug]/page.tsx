@@ -3,6 +3,8 @@ import { getProductBySlug } from '@/sanity/lib/products/getProductBySlug';
 import { imageUrl } from '@/lib/imageUrl';
 import Image from 'next/image';
 import { PortableText } from 'next-sanity';
+import { Button } from '@/components/ui/button';
+import AddToBasketButton from '@/components/AddToBasketButton';
 const page = async (
     {
         params,
@@ -51,6 +53,11 @@ const page = async (
                                 <PortableText value={product.description} />
                             )}
                         </div>
+                    </div>
+
+                    <div className='mt-6'>
+                        <AddToBasketButton product={product} disabled={isOutOfStock}/>
+                            {/* <Button>Add To Basket</Button> */}
                     </div>
                 </div>
             </div>
