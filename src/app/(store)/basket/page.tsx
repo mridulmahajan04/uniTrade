@@ -1,13 +1,17 @@
 "use client"
 import { useBasketStore } from '@/store/store'
-import React from 'react'
-
-import { useAuth, useUser } from "@clerk/nextjs";
+import React, { useEffect } from 'react'
+import Loader from '@/components/Loader'
+import { SignInButton, useAuth, useUser } from "@clerk/nextjs";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import AddToBasketButton from '@/components/AddToBasketButton';
 import { imageUrl } from '@/lib/imageUrl';
 import Image from 'next/image';
+
+import { toast } from 'react-toastify'
+import { createCheckoutSession, Metadata } from  '@/actions/createCheckoutSession'
+
 const page = () => {
     const groupedItems = useBasketStore((state) => state.getGroupItems());
     const { isSignedIn } = useAuth();
@@ -16,6 +20,46 @@ const page = () => {
 
     const [isClient, setIsClient] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+
+    }, [])
+
+    if (!isClient) {
+        return <Loader />
+    }
+
+
+    const handleCheckout = async () => {
+        console.log("Checkout")
+        if (!isSignedIn) return;
+        setLoading(true);
+
+        try {
+
+            const metadata: Metadata = {
+                orderNumber: crypto.randomUUID(),
+                customerName: user?.fullName ?? "Unknown",
+                customerEmail: user?.emailAddresses[0].emailAddress ?? "Unknowm",
+                clerkUserId: user!.id,
+            }
+
+            const checkoutUrl = await createCheckoutSession(groupedItems, metadata);
+            console.log(checkoutUrl)
+            console.log("Here")
+            if (checkoutUrl) {
+                console.log("Link")
+                window.location.href = checkoutUrl;
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+
     if (groupedItems.length == 0) {
         return (
             <div className='container mx-auto p-4 flex flex-col items-center justify-center min-h-[50vh]'>
@@ -24,6 +68,9 @@ const page = () => {
             </div>
         )
     }
+
+
+
     return (
         <div className='container mx-auto p-4 max-w-6xl'>
             <h1 className='text-2xl font-bold mb-4'> Your Basket </h1>
@@ -47,7 +94,7 @@ const page = () => {
                                 <div className='min-w-0'>
                                     <h2 className='text-lg sm:text-xl font-semibold truncate'>{item.product.name}</h2>
                                     <p className='text-sm sm:text-base'>
-                                        Price: Rs. 
+                                        Price: Rs.
                                         {((item.product.price ?? 0) * item.quantity).toFixed(2)}
                                     </p>
                                 </div>
@@ -59,6 +106,29 @@ const page = () => {
                         </div>
                     ))}
                 </div>
+
+                <div className='w-full lg:w-80 lg:sticky lg:top-4 h-fit bg-white p-6 border rounded order-first lg:order-last fixed bottom-0 left-0 lg:left-auto'>
+                    <h3 className='text-xl font-semibold'>Order Summary</h3>
+                    <div className='mt-4 space-y-2'>
+                        <p className='flex justify-between'>
+                            <span>Items:</span>
+                            <span>
+                                {groupedItems.reduce((total, item) => total + item.quantity, 0)}
+                            </span>
+                        </p>
+                        <p className='flex justify-between text-2xl font-bold border-t pt-2'>
+                            <span>Total:</span>
+                            <span>
+                                Rs.{useBasketStore.getState().getTotalPrice().toFixed(2)}
+                            </span>
+                        </p>
+                    </div>
+
+                    <button onClick={handleCheckout} disabled={loading} className='mt-4 w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400'>{loading ? "Processing" : "Checkout"}</button>
+                </div>
+
+                <div className='h-64 lg:h-0'></div>
+
             </div>
         </div>
     )
