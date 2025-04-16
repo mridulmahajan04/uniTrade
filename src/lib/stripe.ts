@@ -4,6 +4,6 @@ if(!process.env.STRIPE_SECRET_KEY) {
     throw new Error("STRIPE_SECRET_KEY is not set")
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2025-03-31" as any
+    apiVersion: "2023-10-16" as any
 })
 export default stripe;
