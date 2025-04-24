@@ -15,8 +15,10 @@ export async function GET(req: NextRequest) {
     console.log("Fetching orders for user:", userId);
     
     // Build the query to fetch orders for this user
-    const query = `*[_type == "order" && customerId == $customerId] | order(orderDate desc)`;
-    const params = { customerId: userId };
+    // Look for orders where either customerId matches Clerk userId
+    // or stripeCustomerId matches for backward compatibility with older orders
+    const query = `*[_type == "order" && (customerId == $userId || stripeCustomerId == $userId)] | order(orderDate desc)`;
+    const params = { userId };
     
     // Fetch orders from Sanity
     const orders = await client.fetch(query, params);

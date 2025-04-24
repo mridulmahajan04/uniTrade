@@ -61,13 +61,19 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     const orderNumber = session.metadata?.orderNumber;
     const customerName = session.customer_details?.name || 'Unknown';
     const customerEmail = session.customer_details?.email || 'Unknown';
+    const clerkUserId = session.metadata?.clerkUserId; // Extract Clerk user ID from metadata
     
     if (!orderNumber) {
       console.error('No order number in session metadata');
       throw new Error('No order number in session metadata');
     }
     
-    console.log(`Processing order ${orderNumber} for ${customerName} (${customerEmail})`);
+    if (!clerkUserId) {
+      console.error('No Clerk user ID in session metadata');
+      console.warn('Using Stripe customer ID as fallback, but this might cause order display issues');
+    }
+    
+    console.log(`Processing order ${orderNumber} for ${customerName} (${customerEmail}), Clerk ID: ${clerkUserId}`);
     
     // Retrieve line items to get product details
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
@@ -76,28 +82,47 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     
     console.log(`Retrieved ${lineItems.data.length} line items`);
     
-    // Map line items to Sanity product references
-    const productItems = await Promise.all(lineItems.data.map(async (item) => {
+    // Map line items to Sanity product references, with validation
+    const productItems = [];
+    
+    for (const item of lineItems.data) {
       const product = item.price?.product as Stripe.Product;
       const productId = product.metadata?.sanityId || product.id;
       
-      // Create a product reference
-      return {
+      // Check if the product exists in Sanity before creating a reference
+      const productExists = await client.fetch(
+        `*[_type == "product" && _id == $productId][0]._id`,
+        { productId }
+      );
+      
+      if (!productExists) {
+        console.warn(`Product with ID ${productId} not found in Sanity. Skipping reference.`);
+        continue;
+      }
+      
+      // Create a product reference only if the product exists
+      productItems.push({
         _key: new Date().getTime().toString() + Math.random().toString().slice(2, 8),
         quantity: item.quantity || 1,
         product: {
           _type: 'reference',
-          _ref: productId // This should be the Sanity document ID
+          _ref: productId
         }
-      };
-    }));
+      });
+    }
     
-    // Create order document
+    // If no valid products were found, log a warning but continue with the order
+    if (productItems.length === 0) {
+      console.warn(`No valid product references found for order ${orderNumber}. Creating order without products.`);
+    }
+    
+    // Create order document with Clerk user ID as the customer ID
     const orderDoc = {
       _type: 'order',
       orderNumber: orderNumber,
       checkoutSessionId: session.id,
-      customerId: session.customer as string,
+      customerId: clerkUserId || (session.customer as string), // Use Clerk ID with fallback to Stripe customer
+      stripeCustomerId: session.customer as string, // Store the Stripe customer ID separately
       paymentIntent: session.payment_intent as string,
       product: productItems,
       totalPrice: session.amount_total ? session.amount_total / 100 : 0,
