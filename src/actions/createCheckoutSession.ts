@@ -23,7 +23,7 @@ export async function createCheckoutSession(
 ) {
     console.log("Starting checkout session creation with items:", JSON.stringify(items, null, 2));
     console.log("Metadata:", JSON.stringify(metadata, null, 2));
-    
+
     try {
         // Validate items
         if (!items || items.length === 0) {
@@ -56,7 +56,7 @@ export async function createCheckoutSession(
         const lineItems = items.map((item) => {
             const price = Math.round(item.product.price! * 100);
             console.log(`Product: ${item.product.name}, Price: ${price}, Quantity: ${item.quantity}`);
-            
+
             return {
                 price_data: {
                     currency: "inr",
@@ -75,7 +75,7 @@ export async function createCheckoutSession(
         });
 
         console.log("Creating Stripe checkout session with line items:", JSON.stringify(lineItems, null, 2));
-        
+
         // Create checkout session
         const session = await stripe.checkout.sessions.create({
             customer: customerId,
@@ -88,10 +88,10 @@ export async function createCheckoutSession(
             line_items: lineItems,
             mode: "payment",
         });
-        
+
         console.log("Checkout session created successfully:", session.id);
         console.log("Checkout URL:", session.url);
-        
+
         return session.url;
     } catch (error) {
         console.error("Error creating checkout session:", error);

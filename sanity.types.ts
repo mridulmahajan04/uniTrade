@@ -280,6 +280,21 @@ export type SanityImageMetadata = {
 
 export type AllSanitySchemaTypes = SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityFileAsset | Geopoint | Sale | Order | Product | Category | Slug | BlockContent | SanityImageCrop | SanityImageHotspot | SanityImageAsset | SanityAssetSourceData | SanityImageMetadata;
 export declare const internalGroqTypeReferenceTo: unique symbol;
+// Source: ./src/sanity/lib/orders/getMyOrders.tsx
+// Variable: MY_ORDERS_QUERY
+// Query: *[_type == "order" && clerkUserId == $userId] | order(orderDate desc) {    _id,    orderNumber,    customerName,    customerEmail,    totalPrice,    currency,    status,    orderDate,    products[]{        _key,        quantity,        product->{            _id,            name,            price,            currency,            "slug": slug.current,            image {                asset->{                    _id,                    url                }            }        }    }}
+export type MY_ORDERS_QUERYResult = Array<{
+  _id: string;
+  orderNumber: string | null;
+  customerName: null;
+  customerEmail: null;
+  totalPrice: number | null;
+  currency: string | null;
+  status: "Cancelled" | "Delivered" | "Paid" | "Pending" | "Shipped" | null;
+  orderDate: string | null;
+  products: null;
+}>;
+
 // Source: ./src/sanity/lib/products/getAllCategories.ts
 // Variable: ALL_CATEGORIES_QUERY
 // Query: *[_type == "category"] | order(name asc)
@@ -576,6 +591,7 @@ export type SALE_QUERYResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
+    "\n*[_type == \"order\" && clerkUserId == $userId] | order(orderDate desc) {\n    _id,\n    orderNumber,\n    customerName,\n    customerEmail,\n    totalPrice,\n    currency,\n    status,\n    orderDate,\n    products[]{\n        _key,\n        quantity,\n        product->{\n            _id,\n            name,\n            price,\n            currency,\n            \"slug\": slug.current,\n            image {\n                asset->{\n                    _id,\n                    url\n                }\n            }\n        }\n    }\n}\n": MY_ORDERS_QUERYResult;
     "\n            *[_type == \"category\"] | order(name asc)\n        ": ALL_CATEGORIES_QUERYResult;
     "*[\n            _type == \"product\"\n        ] | order(name asc)": ALL_PRODUCT_QUERYResult;
     "\n            *[\n                _type == \"product\"\n                && references(*[_type == \"category\" && slug.current == $categorySlug]._id)\n            ]\n            | order(name asc)\n        ": PRODUCT_QUERYResult;
